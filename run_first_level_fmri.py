@@ -5,7 +5,7 @@ from nilearn.glm.first_level import make_first_level_design_matrix, FirstLevelMo
 
 
 def run_first_level(sub_id, save_pth, input_pth):
-    """Run first-level GLM for switch vs stay contrast and save the z-map.
+    """Run first-level GLM for switch vs stay contrast and save the effect size map.
 
     Parameters
     ----------
@@ -98,16 +98,16 @@ def run_first_level(sub_id, save_pth, input_pth):
 
     contrast_switch_vs_stay = np.array(contrast_values)
 
-    z_map = fmri_glm.compute_contrast(
+    effect_map = fmri_glm.compute_contrast(
         contrast_switch_vs_stay,
         stat_type="t",
-        output_type="z_score",
+        output_type="effect_size",
     )
 
     # --- Save ---
-    output_path = save_pth / f"{sub_id}_switch-vs-stay_zmap.nii.gz"
-    z_map.to_filename(str(output_path))
-    print(f"[{sub_id}] Z-map saved to: {output_path}")
+    output_path = save_pth / f"{sub_id}_switch-vs-stay_effect.nii.gz"
+    effect_map.to_filename(str(output_path))
+    print(f"[{sub_id}] Effect map saved to: {output_path}")
 
 
 if __name__ == "__main__":
