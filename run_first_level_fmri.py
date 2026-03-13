@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 from nilearn.glm.first_level import make_first_level_design_matrix, FirstLevelModel
 from nilearn.datasets import load_mni152_template
+from nilearn.image import resample_to_img
 
 
 def run_first_level(sub_id, save_pth, input_pth):
@@ -82,15 +83,8 @@ def run_first_level(sub_id, save_pth, input_pth):
         hrf_model="glover",
     )
 
-    # --- Fit model (resample to MNI152 2mm space) ---
-    template = load_mni152_template(resolution=2)
-    fmri_glm = FirstLevelModel(
-        t_r=t_r,
-        noise_model="ar1",
-        signal_scaling=0,
-        target_affine=template.affine,
-        target_shape=template.shape,
-    )
+    # --- Fit model ---
+    fmri_glm = FirstLevelModel(t_r=t_r, noise_model="ar1", signal_scaling=0)
     fmri_glm = fmri_glm.fit(str(bold_file), design_matrices=design_matrix)
 
     # --- Switch > Stay contrast ---
@@ -111,6 +105,10 @@ def run_first_level(sub_id, save_pth, input_pth):
         stat_type="t",
         output_type="effect_size",
     )
+
+    # --- Resample to MNI152 2mm space ---
+    template = load_mni152_template(resolution=2)
+    effect_map = resample_to_img(effect_map, template, interpolation="continuous")
 
     # --- Save ---
     output_path = save_pth / f"{sub_id}_switch-vs-stay_effect.nii.gz"
