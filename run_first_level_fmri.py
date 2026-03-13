@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from nilearn.glm.first_level import make_first_level_design_matrix, FirstLevelModel
+from nilearn.datasets import load_mni152_template
 
 
 def run_first_level(sub_id, save_pth, input_pth):
@@ -81,8 +82,15 @@ def run_first_level(sub_id, save_pth, input_pth):
         hrf_model="glover",
     )
 
-    # --- Fit model ---
-    fmri_glm = FirstLevelModel(t_r=t_r, noise_model="ar1", signal_scaling=0)
+    # --- Fit model (resample to MNI152 2mm space) ---
+    template = load_mni152_template(resolution=2)
+    fmri_glm = FirstLevelModel(
+        t_r=t_r,
+        noise_model="ar1",
+        signal_scaling=0,
+        target_affine=template.affine,
+        target_shape=template.shape,
+    )
     fmri_glm = fmri_glm.fit(str(bold_file), design_matrices=design_matrix)
 
     # --- Switch > Stay contrast ---
